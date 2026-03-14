@@ -13,7 +13,28 @@ class LeaderboardController(
 ) {
 
     @GetMapping
-    fun getLeaderboard(): List<GameResult> =
-        gameResultService.getGameResults().sortedWith(compareBy({ -it.score }, { it.timeInSeconds }))
+    fun getLeaderboard(
+        @RequestParam(required = false) rank: Int?
+    ): List<GameResult> {
+
+        val sorted = gameResultService.getGameResults()
+            .sortedWith(compareByDescending<GameResult> { it.score }
+                .thenBy { it.timeInSeconds })
+
+        if (rank == null) {
+            return sorted
+        }
+
+        if (rank < 1 || rank > sorted.size) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid rank")
+        }
+
+        val index = rank - 1
+
+        val start = maxOf(0, index - 3)
+        val end = minOf(sorted.size, index + 4)
+
+        return sorted.subList(start, end)
+    }
 
 }
