@@ -54,4 +54,54 @@ class LeaderboardControllerTests {
         assertEquals(first, res[2])
     }
 
+    @Test
+    fun test_getLeaderboard_withoutRank_returnsAll() {
+
+        val first = GameResult(1, "first", 20, 20.0)
+        val second = GameResult(2, "second", 15, 10.0)
+        val third = GameResult(3, "third", 10, 15.0)
+
+        whenever(mockedService.getGameResults())
+            .thenReturn(listOf(first, second, third))
+
+        val res = controller.getLeaderboard(null)
+
+        assertEquals(3, res.size)
+    }
+
+    @Test
+    fun test_getLeaderboard_withRank_returnsNearbyPlayers() {
+
+        val list = listOf(
+            GameResult(1, "A", 100, 10.0),
+            GameResult(2, "B", 90, 10.0),
+            GameResult(3, "C", 80, 10.0),
+            GameResult(4, "D", 70, 10.0),
+            GameResult(5, "E", 60, 10.0),
+            GameResult(6, "F", 50, 10.0),
+            GameResult(7, "G", 40, 10.0),
+            GameResult(8, "H", 30, 10.0)
+        )
+
+        whenever(mockedService.getGameResults()).thenReturn(list)
+
+        val res = controller.getLeaderboard(5)
+
+        assertEquals(7, res.size)
+    }
+
+    @Test
+    fun test_getLeaderboard_invalidRank_throwsException() {
+
+        val list = listOf(
+            GameResult(1, "A", 100, 10.0),
+            GameResult(2, "B", 90, 10.0)
+        )
+
+        whenever(mockedService.getGameResults()).thenReturn(list)
+
+        assertThrows<ResponseStatusException> {
+            controller.getLeaderboard(10)
+        }
+    }
 }
